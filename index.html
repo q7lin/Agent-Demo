@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>李白AI语文老师</title>
+  <link href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Mulish', sans-serif;
+      background: linear-gradient(135deg, #e0eafc, #cfdef3);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 40px 20px;
+    }
+
+    .container {
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(15px);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+      border-radius: 20px;
+      padding: 40px 30px;
+      width: 100%;
+      max-width: 600px;
+      text-align: center;
+    }
+
+    h2 {
+      font-size: 26px;
+      margin-bottom: 30px;
+      color: #222;
+    }
+
+    .input-group {
+      position: relative;
+      width: 100%;
+      margin-bottom: 20px;
+    }
+
+    .input-group input {
+      width: 100%;
+      padding: 14px 18px 14px 42px;
+      border: 1px solid #ccc;
+      border-radius: 12px;
+      font-size: 16px;
+      outline: none;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+
+    .input-group::before {
+      content: "💬";
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 18px;
+      opacity: 0.6;
+    }
+
+    button {
+      background: linear-gradient(to right, #4facfe, #00f2fe);
+      color: #fff;
+      border: none;
+      padding: 12px 24px;
+      font-size: 16px;
+      font-weight: 600;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      width: 100%;
+    }
+
+    button:hover {
+      opacity: 0.9;
+      transform: scale(1.02);
+    }
+
+    #answer {
+      margin-top: 30px;
+      font-size: 17px;
+      line-height: 1.6;
+      color: #333;
+      white-space: pre-wrap;
+      text-align: left;
+    }
+
+    #voice {
+      margin-top: 20px;
+      width: 100%;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        padding: 30px 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>🧠 和 <strong>李白AI语文老师</strong> 对话</h2>
+    
+    <div class="input-group">
+      <input id="question" type="text" placeholder="请输入问题，如：李白的诗风有哪些特点？">
+    </div>
+
+    <button onclick="ask()">🚀 发送问题</button>
+
+    <p id="answer"></p>
+    <audio id="voice" controls></audio>
+  </div>
+
+  <script>
+    async function ask() {
+      const question = document.getElementById("question").value.trim();
+      const audio = document.getElementById("voice");
+      const answerEl = document.getElementById("answer");
+
+      if (!question) return alert("📌 请输入问题后再提交");
+
+      // 重置音频
+      audio.pause();
+      audio.src = "";
+      audio.load();
+
+      answerEl.innerText = "💡 思考中，请稍候...";
+
+      try {
+        const res = await fetch("http://127.0.0.1:5000/ask/", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ question })
+        });
+
+        const data = await res.json();
+        answerEl.innerText = data.answer;
+
+        // 播放语音
+        setTimeout(() => {
+          audio.src = "http://127.0.0.1:5000/audio/?t=" + new Date().getTime();
+          audio.play();
+        }, 1000);
+      } catch (err) {
+        answerEl.innerText = "❌ 请求失败，请确保服务器已启动";
+        console.error("请求出错：", err);
+      }
+    }
+  </script>
+</body>
+</html>
